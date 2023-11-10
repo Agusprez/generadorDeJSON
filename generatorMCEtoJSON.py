@@ -35,24 +35,24 @@ def procesar_carpeta(carpeta):
 
 def cargar_excel(ruta):
     try:
-
         df = pd.read_excel(ruta, skiprows=1)
         df.fillna(0, inplace=True)
-        
+
         # Obtener el nombre base del archivo Excel (sin extensión)
         nombre_base = os.path.splitext(os.path.basename(ruta))[0]
+        
         # Obtener los primeros 11 caracteres del nombre del archivo Excel
-        #Tengo que obtener a partir de lo de adentro del excel cl
         primera_fila_excel = pd.read_excel(ruta, header=None, nrows=1).iloc[0]
+        
+        # Invertir y obtener los primeros 11 caracteres para obtener el CUIT
+        cuit = (primera_fila_excel[0])[::-1][:11][::-1]
 
-        #Todo esto me sirve para obtener el cuit de dentro del mismo archivo excel
-        invertir = (primera_fila_excel[0])
-        invertir = invertir[::-1]
-        invertir = invertir[:11]
-        invertir = invertir[::-1]
-        #print(invertir)
+        df["Nro. Doc. Receptor"] = df["Nro. Doc. Receptor"].astype(str).str.replace(r'\.0$', '', regex=True)
 
-        cuit = invertir
+
+
+        # Ordenar el DataFrame por la columna "Número Desde"
+        df = df.sort_values(by="Número Desde")
 
         # Construir la ruta completa del archivo JSON en la misma carpeta
         ruta_json = os.path.join(os.path.dirname(ruta), f"{nombre_base}.json")
@@ -72,6 +72,7 @@ def cargar_excel(ruta):
 
     except Exception as e:
         print("Error al cargar el archivo Excel:", e)
+
 
 def mostrar_resumen():
     global archivos_procesados, archivos_generados, errores, tiempo_inicio
@@ -97,7 +98,7 @@ ventana = tk.Tk()
 ventana.title("Seleccionar Carpeta con Archivos Excel")
 
 ventana.geometry("400x200")
-instrucciones = tk.Label(ventana, text="Script para transformar MCE a JSON (y generar informes PDF)")
+instrucciones = tk.Label(ventana, text="Script para transformar MCE a JSON")
 instrucciones.pack(pady=10)
 
 # Botón para seleccionar la carpeta
